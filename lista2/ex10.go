@@ -24,8 +24,8 @@ f.Scan(&num1)
 
 switch num1 {
 case 1: 
-	f.Println("voce quer viagem de ida e volta?")
-	f.Println("escreva 1 para sim, 2 para nao:")
+f.Println("voce quer viagem de ida e volta?")
+	f.Println("escreva 1 para sim, 2 para nao:")	
 	f.Scan(&num2) 
 	if num2 == 2 {
 	f.Println("o valor da sua viagem é R$:", regiaoNorteIda)

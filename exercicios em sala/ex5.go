@@ -10,7 +10,7 @@ func main() {
    f.Scan(&n2)
    f.Print("Digite o terceiro número: ")
    f.Scan(&n3)
-   // Cálculo do maior através da chamada à função
+   // Chamada à função
    m := maior(n1, n2, n3)
    f.Printf("O maior número entre %d, %d e %d é %d", n1, n2, n3, m)
 }

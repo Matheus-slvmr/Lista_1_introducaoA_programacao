@@ -6,12 +6,13 @@ func main() {
    f.Print("Digite um número inteiro: ")
    f.Scan(&n)
    // Chamada à função fatorial
-   fatorial := fatorial(n)
+   fatorial := fatorialIterativo(n)
    f.Printf("O fatorial de %d é %d", n, fatorial)
 }
-func fatorial(numero int) int {
-   if numero == 0 || numero == 1 {
-	  return 1
-   }
-   return numero * fatorial (numero - 1)
+func fatorialIterativo(numero int) int {
+    resultado := 1
+    for i := 2; i <= numero; i++ {
+        resultado *= i 
+    }
+    return resultado
 }

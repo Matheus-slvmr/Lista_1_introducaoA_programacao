@@ -1,0 +1,22 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+
+}
+h1{
+     background-image: url(/pictures/Logos_SUS_DIGITAL_PB.png);
+    background-repeat: no-repeat;
+    background-position: top;
+    font-size: 30px;
+    padding-top: 20%;
+    text-align: center;
+}
+#user-info{
+    font-size: 25px;
+    border: 2px solid black;
+ border-radius:2%;
+ margin: 2%;
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Confirmado - SUS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-image: url(/pictures/Logos_SUS_DIGITAL_PB.png);
+            background-repeat: no-repeat;
+            background-position: top;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .success-container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border-top: 5px solid #0072b9; /* Detalhe azul do SUS */
+        }
+
+        .success-icon {
+            font-size: 50px;
+            color: #28a745; /* Verde de sucesso */
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .details-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .details-box p {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .details-box strong {
+            color: #000;
+        }
+
+        .btn-voltar {
+            display: inline-block;
+            background-color: #000;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-voltar:hover {
+            transform: scale(1.05);
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="success-container">
+        <div class="success-icon">✔️</div>
+        <h2>Agendamento Confirmado!</h2>
+        
+        <p style="margin-bottom: 20px; color: #666;">Sua consulta foi registrada com sucesso no sistema do SUS.</p>
+
+        <div class="details-box">
+            <p><strong>Especialidade:</strong> {{.Specialty}}</p>
+            <p><strong>Local:</strong> {{.Hospital}}</p>
+            <p><strong>Data:</strong> {{.Date}}</p>
+            <p><strong>Horário:</strong> {{.Time}}</p>
+        </div>
+
+        <a href="/index.html" class="btn-voltar">Voltar ao Início</a>
+    </div>
+</body>
+
+</html>

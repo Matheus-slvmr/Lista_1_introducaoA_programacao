@@ -32,6 +32,9 @@ func main (){
 // Define a rota "/deleteAccount" e associa ao handler DeleteAccountHandler
     http.HandleFunc("/deleteAccount", handlers.DeleteAccountHandler)
 
+// NOVA ROTA: Agendamento de consultas
+	http.HandleFunc("/schedule", handlers.ScheduleHandler)
+
 // Obtém os endereços de rede disponíveis na máquina
     addrs, err := net.InterfaceAddrs()
     if err != nil {

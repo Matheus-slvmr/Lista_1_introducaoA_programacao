@@ -110,10 +110,13 @@ O sistema oferece as seguintes rotas e funcionalidades:
 | `/form` | POST | Endpoint para processar criação de conta |
 | `/forms/login.html` | GET | Formulário de login |
 | `/login` | POST | Endpoint para processar login |
+| `/profile.html` | GET | Página de perfil do usuário |
 | `/forms/updateAcc.html` | GET | Formulário para atualizar dados da conta |
 | `/updateAccount` | POST | Endpoint para processar atualização de conta |
 | `/forms/deleteAcc.html` | GET | Formulário para deletar conta |
 | `/deleteAccount` | POST | Endpoint para processar exclusão de conta |
+| `/schedule` | POST | Endpoint para agendar consultas/compromissos |
+| `/appointment_success.html` | GET | Página de confirmação de agendamento |
 | `/hello` | GET | Endpoint de teste |
 
 ## 🗂️ Estrutura do Projeto
@@ -134,7 +137,8 @@ AA1/
 │   │   ├── formHandler.go
 │   │   ├── loginHandler.go
 │   │   ├── updateAccountHandler.go
-│   │   └── deleteAccountHandler.go
+│   │   ├── deleteAccountHandler.go
+│   │   └── appointmentHandler.go   # Handler para agendamentos
 │   │
 │   ├── utils/                    # Utilitários
 │   │   ├── connDB.go             # Conexão com banco de dados
@@ -148,6 +152,7 @@ AA1/
 │   └── static/                   # Arquivos estáticos (Frontend)
 │       ├── index.html            # Página inicial
 │       ├── profile.html          # Página de perfil
+│       ├── appointment_success.html  # Página de confirmação de agendamento
 │       │
 │       ├── forms/                # Formulários HTML
 │       │   ├── createAcc.html
@@ -164,7 +169,6 @@ AA1/
 │       │   └── profile.style.css
 │       │
 │       └── pictures/             # Imagens
-│           └── logo.svg
 │
 └── pictures/                     # Imagens adicionais (não utilizada)
 ```

@@ -4,19 +4,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil do Usuário</title>
+    <title>Perfil do Usuário - SUS (Grátis)</title>
     <link rel="stylesheet" href="/style/profile.style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        .agendamento-container {
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 2%;
+            background-color: #fff;
+        }
+        /* O container do mapa precisa de uma altura definida */
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            z-index: 1; /* Garante que o mapa fique por baixo de menus se houver */
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group input, .form-group select {
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button.btn-agendar {
+            background-color: #000;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button.btn-agendar:hover {
+            transform: scale(1.02);
+            transition: all .3s ease-in-out;
+        }
+    </style>
 </head>
 
 <body>
     <div id="container">
         <h1><br>Bem-vindo ao seu perfil do SUS</h1>
+        
         <div id="user-info">
             <p><strong>Nome:</strong> {{.Username}}</p>
             <p><strong>E-mail:</strong> {{.Email}}</p>
             <p><strong>Data de Nascimento:</strong> {{.BornDate}}</p>
         </div>
+
+        <div class="agendamento-container">
+            <h2>Agendar Nova Consulta</h2>
+            
+            <form action="/schedule" method="POST">
+                <input type="hidden" name="user_id" value="{{.ID}}">
+                
+                <div class="form-group">
+                    <label>Especialidade:</label>
+                    <select name="specialty" required>
+                        <option value="Clínico Geral">Clínico Geral</option>
+                        <option value="Pediatria">Pediatria</option>
+                        <option value="Ginecologia">Ginecologia</option>
+                        <option value="Odontologia">Odontologia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Hospital (Clique no marcador do mapa para preencher):</label>
+                    <input type="text" id="hospital" name="hospital" placeholder="Selecione um hospital no mapa" required readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Data e Hora:</label>
+                    <input type="datetime-local" name="appointment_date" required>
+                </div>
+
+                <button type="submit" class="btn-agendar">Confirmar Agendamento</button>
+            </form>
+
+            <h3 style="margin-top: 20px;">Hospitais e Postos SUS Próximos (via OpenStreetMap)</h3>
+            <div id="map"></div>
+        </div>
     </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        let map;
+
+        function initMap() {
+            // Posição inicial padrão (Goiânia - Centro/UFG) caso o usuário recuse a localização
+            const posicaoPadrao = [-16.6869, -49.2648];
+
+            // Inicializa o mapa Leaflet apontando para a div #map
+            map = L.map('map').setView(posicaoPadrao, 14);
+
+            // Carrega os desenhos do mapa (Tiles) vindos do OpenStreetMap de forma gratuita
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Tenta obter a localização real do usuário usando o navegador
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        map.setView([lat, lng], 14);
+
+                        // Cria um círculo azul na posição exata do usuário
+                        L.circleMarker([lat, lng], {
+                            radius: 10,
+                            fillColor: "#0072b9",
+                            color: "#fff",
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.9
+                        }).addTo(map).bindPopup('<b>Você está aqui!</b>').openPopup();
+
+                        // Busca os hospitais ao redor da localização do usuário
+                        buscarHospitaisSUS(lat, lng);
+                    },
+                    () => {
+                        buscarHospitaisSUS(posicaoPadrao[0], posicaoPadrao[1]);
+                    }
+                );
+            } else {
+                buscarHospitaisSUS(posicaoPadrao[0], posicaoPadrao[1]);
+            }
+        }
+
+        // Função com QUERY EXPANDIDA para achar UBS, UPA e Hospitais no Brasil
+        function buscarHospitaisSUS(lat, lng) {
+            const raioEmMetros = 10000; // Aumentado para 10km para garantir resultados
+            
+            // Esta query agora busca por hospitais, clínicas, médicos e centros de saúde (UBS/UPA)
+            const query = `[out:json][timeout:25];
+            (
+              node["amenity"~"hospital|clinic|doctors"](around:${raioEmMetros},${lat},${lng});
+              way["amenity"~"hospital|clinic|doctors"](around:${raioEmMetros},${lat},${lng});
+              node["healthcare"~"hospital|clinic|centre|doctor"](around:${raioEmMetros},${lat},${lng});
+              way["healthcare"~"hospital|clinic|centre|doctor"](around:${raioEmMetros},${lat},${lng});
+            );
+            out center;`;
+            
+            const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+            console.log("Buscando estabelecimentos de saúde do SUS próximos...");
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro na comunicação com o servidor de mapas.");
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Dados encontrados:", data.elements);
+
+                    if (!data.elements || data.elements.length === 0) {
+                        console.warn("Nenhum estabelecimento de saúde foi mapeado nesta região.");
+                        return;
+                    }
+
+                    data.elements.forEach(element => {
+                        const hospitalLat = element.lat || (element.center ? element.center.lat : null);
+                        const hospitalLng = element.lon || (element.center ? element.center.lng : null);
+                        
+                        // Tenta capturar o nome oficial, senão define um genérico baseado no tipo
+                        let nomeHospital = element.tags.name || element.tags.description;
+                        if (!nomeHospital) {
+                            if (element.tags.amenity === "hospital") nomeHospital = "Hospital Público";
+                            else if (element.tags.healthcare === "centre") nomeHospital = "Posto de Saúde / UBS";
+                            else nomeHospital = "Unidade de Atendimento SUS";
+                        }
+
+                        if (hospitalLat && hospitalLng) {
+                            // Criamos um Círculo Vermelho piscante/estilizado em vez do ícone de imagem padrão
+                            // Isso evita 100% o bug do ícone invisível no localhost
+                            const marker = L.circleMarker([hospitalLat, hospitalLng], {
+                                radius: 8,
+                                fillColor: "#ff3338", // Vermelho
+                                color: "#000",        // Borda preta
+                                weight: 1,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            }).addTo(map);
+                            
+                            // Remove aspas simples do nome para não quebrar o HTML do botão
+                            const nomeLimpo = nomeHospital.replace(/'/g, " ");
+
+                            marker.bindPopup(`
+                                <strong>${nomeLimpo}</strong><br>
+                                <small style="color:gray;">${element.tags.amenity || "Saúde"}</small><br>
+                                <button onclick="selecionarHospital('${nomeLimpo}')" style="margin-top:8px; cursor:pointer; background:#000; color:#fff; border:none; padding:4px 8px; border-radius:4px;">Selecionar Hospital</button>
+                            `);
+                        }
+                    });
+                })
+                .catch(error => console.error("Erro ao processar locais de saúde:", error));
+        }
+
+        // Função chamada pelo botão de dentro do mapa
+        function selecionarHospital(nome) {
+            document.getElementById("hospital").value = nome;
+        }
+
+        // Executa a inicialização do mapa
+        window.onload = initMap;
+    </script>
 </body>
 
 </html>
